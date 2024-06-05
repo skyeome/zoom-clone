@@ -17,31 +17,12 @@ const httpServer = http.createServer(app);
 const wsServer = new Server(httpServer);
 
 wsServer.on("connection", (socket) => {
-  console.log(socket);
+  socket.on("enter_room", (msg, done) => {
+    console.log(msg);
+    setTimeout(() => {
+      done();
+    }, 10000);
+  });
 });
-
-// const wss = new WebSocketServer({ server });
-
-// const sockets = [];
-
-// wss.on("connection", (socket) => {
-//   sockets.push(socket);
-//   socket.nickname = "Anonymous";
-//   console.log("Connected to Browser ✅");
-//   socket.on("close", () => console.log("Disconnected from the Browser ❌"));
-//   socket.on("message", (message) => {
-//     const msg = JSON.parse(message.toString("utf-8"));
-//     switch (msg.type) {
-//       case "new_message":
-//         sockets.forEach((aSocket) => {
-//           aSocket.send(`${socket.nickname}: ${msg.payload}`);
-//         });
-//         break;
-//       case "nickname":
-//         socket.nickname = msg.payload;
-//         break;
-//     }
-//   });
-// });
 
 httpServer.listen(3000, handleListen);
