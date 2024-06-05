@@ -16,11 +16,22 @@ function addMessage(message) {
   ul.appendChild(li);
 }
 
+function handleMessageSubmit(event) {
+  event.preventDefault();
+  const input = room.querySelector("input");
+  socket.emit("new_message", input.value, roomName, () => {
+    addMessage(`You: ${input.value}`);
+    input.value = "";
+  });
+}
+
 function showRoom() {
   welcome.hidden = true;
   room.hidden = false;
   const h3 = room.querySelector("h3");
   h3.innerText = `Room ${roomName}`;
+  const form = room.querySelector("form");
+  form.addEventListener("submit", handleMessageSubmit);
 }
 
 function handleRoomSubmit(event) {
@@ -31,9 +42,18 @@ function handleRoomSubmit(event) {
   input.value = "";
 }
 
+// 방에 접속시 할 일
 form.addEventListener("submit", handleRoomSubmit);
 
-// 환영 이벤트 발생시 할 일
+// welcome 이벤트 발생시 할 일
 socket.on("welcome", () => {
   addMessage("친구가 방에 입장했습니다.");
 });
+
+// bye 이벤트 발생시 할 일
+socket.on("bye", () => {
+  addMessage("친구가 방에서 퇴장했습니다.");
+});
+
+// new_message 이벤트 발생시 할 일
+socket.on("new_message", addMessage);
