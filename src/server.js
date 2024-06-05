@@ -1,5 +1,6 @@
 import http from "http";
-import WebSocket, { WebSocketServer } from "ws";
+// import WebSocket, { WebSocketServer } from "ws";
+import { Server } from "socket.io";
 import express from "express";
 
 const app = express();
@@ -12,29 +13,35 @@ app.get("/*", (_, res) => res.redirect("/"));
 
 const handleListen = () => console.log(`Listening on http://localhost:3000`);
 
-const server = http.createServer(app);
-const wss = new WebSocketServer({ server });
+const httpServer = http.createServer(app);
+const wsServer = new Server(httpServer);
 
-const sockets = [];
-
-wss.on("connection", (socket) => {
-  sockets.push(socket);
-  socket.nickname = "Anonymous";
-  console.log("Connected to Browser ✅");
-  socket.on("close", () => console.log("Disconnected from the Browser ❌"));
-  socket.on("message", (message) => {
-    const msg = JSON.parse(message.toString("utf-8"));
-    switch (msg.type) {
-      case "new_message":
-        sockets.forEach((aSocket) => {
-          aSocket.send(`${socket.nickname}: ${msg.payload}`);
-        });
-        break;
-      case "nickname":
-        socket.nickname = msg.payload;
-        break;
-    }
-  });
+wsServer.on("connection", (socket) => {
+  console.log(socket);
 });
 
-server.listen(3000, handleListen);
+// const wss = new WebSocketServer({ server });
+
+// const sockets = [];
+
+// wss.on("connection", (socket) => {
+//   sockets.push(socket);
+//   socket.nickname = "Anonymous";
+//   console.log("Connected to Browser ✅");
+//   socket.on("close", () => console.log("Disconnected from the Browser ❌"));
+//   socket.on("message", (message) => {
+//     const msg = JSON.parse(message.toString("utf-8"));
+//     switch (msg.type) {
+//       case "new_message":
+//         sockets.forEach((aSocket) => {
+//           aSocket.send(`${socket.nickname}: ${msg.payload}`);
+//         });
+//         break;
+//       case "nickname":
+//         socket.nickname = msg.payload;
+//         break;
+//     }
+//   });
+// });
+
+httpServer.listen(3000, handleListen);
