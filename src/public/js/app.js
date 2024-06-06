@@ -46,10 +46,13 @@ function showRoom() {
 
 function handleRoomSubmit(event) {
   event.preventDefault();
-  const input = form.querySelector("input");
-  socket.emit("enter_room", input.value, showRoom);
-  roomName = input.value;
-  input.value = "";
+  const roomInput = welcome.querySelector(".roomname");
+  const nameInput = welcome.querySelector(".nickname");
+  socket.emit("enter_room", roomInput.value, nameInput.value, showRoom);
+  roomName = roomInput.value;
+  roomInput.value = "";
+  const changeNameInput = room.querySelector("#name input");
+  changeNameInput.value = nameInput.value;
 }
 
 // 방에 접속시 할 일
