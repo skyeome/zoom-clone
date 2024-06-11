@@ -148,7 +148,19 @@ socket.on("ice", (ice) => {
 
 function makeConnection() {
   // peer connection을 생성
-  myPeerConnection = new RTCPeerConnection();
+  myPeerConnection = new RTCPeerConnection({
+    iceServers: [
+      {
+        urls: [
+          "stun:stun.l.google.com:19302",
+          "stun:stun.l2.google.com:19302",
+          "stun:stun.l3.google.com:19302",
+          "stun:stun.l4.google.com:19302",
+          "stun:stun.l5.google.com:19302",
+        ],
+      },
+    ],
+  });
   myPeerConnection.addEventListener("icecandidate", handleIce);
   myPeerConnection.addEventListener("track", handleAddStream);
   myStream
