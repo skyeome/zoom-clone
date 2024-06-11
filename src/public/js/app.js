@@ -113,8 +113,8 @@ socket.on("welcome", async () => {
   // peer A는 누군가 나에게 접속하면 초대장(offer)을 생성후 offer 이벤트를 emit
   const offer = await myPeerConnection.createOffer();
   myPeerConnection.setLocalDescription(offer);
-  console.log("sent the offer", roomName);
   socket.emit("offer", offer, roomName);
+  console.log("sent the offer", roomName);
 });
 
 socket.on("offer", async (offer) => {
@@ -123,11 +123,18 @@ socket.on("offer", async (offer) => {
   const answer = await myPeerConnection.createAnswer();
   myPeerConnection.setLocalDescription(answer);
   socket.emit("answer", answer, roomName);
+  console.log("sent the answer");
 });
 
 socket.on("answer", async (answer) => {
   // 응답받은 answer를 RemoteDescription으로 설정
   myPeerConnection.setRemoteDescription(answer);
+  console.log("receive the answer");
+});
+
+socket.on("ice", (ice) => {
+  myPeerConnection.addIceCandidate(ice);
+  console.log("receive candidate");
 });
 
 // RTC Code
@@ -135,7 +142,20 @@ socket.on("answer", async (answer) => {
 function makeConnection() {
   // peer connection을 생성
   myPeerConnection = new RTCPeerConnection();
+  myPeerConnection.addEventListener("icecandidate", handleIce);
+  myPeerConnection.addEventListener("track", handleAddStream);
   myStream
     .getTracks()
     .forEach((track) => myPeerConnection.addTrack(track, myStream));
+}
+
+function handleIce(data) {
+  socket.emit("ice", data.candidate, roomName);
+  console.log("sent candidate");
+}
+
+function handleAddStream(data) {
+  const peerFace = document.getElementById("peerFace");
+  console.log(data.streams);
+  peerFace.srcObject = data.streams[0];
 }
