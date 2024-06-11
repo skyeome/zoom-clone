@@ -90,17 +90,18 @@ camerasSelect.addEventListener("input", handleCameraChange);
 const welcome = document.getElementById("welcome");
 const welcomeForm = welcome.querySelector("form");
 
-async function startMedia() {
+async function initCall() {
   welcome.hidden = true;
   call.hidden = false;
   await getMedia();
   makeConnection();
 }
 
-function handleWelcomeSubmit(event) {
+async function handleWelcomeSubmit(event) {
   event.preventDefault();
   const input = welcomeForm.querySelector("input");
-  socket.emit("join_room", input.value, startMedia);
+  await initCall();
+  socket.emit("join_room", input.value);
   roomName = input.value;
   input.value = "";
 }
@@ -109,16 +110,24 @@ welcomeForm.addEventListener("submit", handleWelcomeSubmit);
 
 // Socket Code
 socket.on("welcome", async () => {
-  // peer A는 누군가 나에게 접속하면 offer를 생성후 offer 이벤트를 emit
+  // peer A는 누군가 나에게 접속하면 초대장(offer)을 생성후 offer 이벤트를 emit
   const offer = await myPeerConnection.createOffer();
   myPeerConnection.setLocalDescription(offer);
   console.log("sent the offer", roomName);
   socket.emit("offer", offer, roomName);
 });
 
-socket.on("offer", (offer) => {
-  // peer B는 offer를 받는다
-  console.log(offer);
+socket.on("offer", async (offer) => {
+  // peer B는 받은 초대장에 응답한다.
+  myPeerConnection.setRemoteDescription(offer);
+  const answer = await myPeerConnection.createAnswer();
+  myPeerConnection.setLocalDescription(answer);
+  socket.emit("answer", answer, roomName);
+});
+
+socket.on("answer", async (answer) => {
+  // 응답받은 answer를 RemoteDescription으로 설정
+  myPeerConnection.setRemoteDescription(answer);
 });
 
 // RTC Code
